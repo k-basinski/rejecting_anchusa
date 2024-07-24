@@ -5,28 +5,7 @@ import pandas as pd
 import anchusa as an
 import antropy as at
 
-# %%
 
-
-def calculate_entropy(data):
-    en = at.sample_entropy(data.reshape(-1))
-    return en
-
-
-def sliding_window(data, win_size):
-    return np.lib.stride_tricks.sliding_window_view(data, win_size, axis=1)
-
-def calculate_sliding_entropy(data, win_size=10):
-    # calculate sliding window mmse
-    win = sliding_window(data, win_size=win_size)
-    # init result array
-    entropies = []
-    # iterate over all windows
-    for step in range(win.shape[1]):
-        re = calculate_entropy(win[:, step, :])
-        entropies.append(re)
-
-    return entropies
 
 # CONFIG
 
@@ -41,7 +20,7 @@ start, stop = 0, 339
 
 output_folder = 'extracted_features'
 
-window_size = 10
+window_size = 5
 
 # list all 2-back conditions
 two_back_conds = ['2bk_body', '2bk_faces', '2bk_places', '2bk_tools']
@@ -69,12 +48,12 @@ dfs = []
 
 s = 0
 
-ens = calculate_sliding_entropy(two_back_fpn[s], win_size=window_size)
+ens = an.calculate_sliding_entropy(two_back_fpn[s], win_size=window_size)
 
 # %%
 for s in subjects[start:stop]:
     print(f'Calculating sliding window entropy for subject: {s}...', end='')
-    res = calculate_sliding_entropy(two_back_fpn[s], win_size=window_size)
+    res = an.calculate_sliding_entropy(two_back_fpn[s], win_size=window_size)
     mdf = pd.DataFrame({
         'subject': s,
         'condition': 'two_back',
@@ -82,12 +61,13 @@ for s in subjects[start:stop]:
     })
     dfs.append(mdf)
 
-    res = calculate_sliding_entropy(no_back_fpn[s], win_size=window_size)
+    res = an.calculate_sliding_entropy(no_back_fpn[s], win_size=window_size)
     mdf = pd.DataFrame({
         'subject': s,
         'condition': 'no_back',
         'mmse': res,
     })
+
     dfs.append(mdf)
     print('...done.')
 # %%
@@ -95,6 +75,6 @@ for s in subjects[start:stop]:
 
 # %%
 df = pd.concat(dfs)
-
+df.index.name = 'sample'
 df.to_csv(f'{output_folder}/windowed_sample_entropy_window{window_size}.csv')
 

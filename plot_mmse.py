@@ -15,7 +15,7 @@ res_files = [
 
 mdfs = []
 for f in res_files:
-    mdf = pd.read_csv(f'extracted_features/{f}')
+    mdf = pd.read_csv(f'extracted_features/temp/{f}')
     mdfs.append(mdf)
 
 
@@ -37,6 +37,19 @@ sns.boxplot(x = 'scale', y = 'mmse', hue = 'condition', data = df)
 plt.show()
 
 # %%
-win_df = pd.read_csv('extracted_features/windowed_sample_entropy.csv')
+win_df = pd.read_csv('extracted_features/windowed_sample_entropy_window5.csv')
+sns.lineplot(data=win_df, x='sample', y='mmse', hue='condition')
+plt.show()
+
+# %%
+win_df = pd.read_csv('extracted_features/windowed_sample_entropy_window7.csv')
+sns.lineplot(data=win_df, x='sample', y='mmse', hue='condition')
+plt.show()
+# %%
+win_df = pd.read_csv('extracted_features/windowed_sample_entropy_window10.csv')
+sns.lineplot(data=win_df, x='sample', y='mmse', hue='condition')
+plt.show()
+# %%
+win_df = pd.read_csv('extracted_features/windowed_sample_entropy_window12.csv')
 sns.lineplot(data=win_df, x='sample', y='mmse', hue='condition')
 plt.show()

@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os, requests, tarfile
+import antropy as at
 
 
 # Necessary for visualization
@@ -10,7 +11,7 @@ from nilearn.surface import vol_to_surf
 
 # %matplotlib inline
 # %config InlineBackend.figure_format = 'retina'
-plt.style.use("https://raw.githubusercontent.com/NeuromatchAcademy/course-content/master/nma.mplstyle")
+# plt.style.use("https://raw.githubusercontent.com/NeuromatchAcademy/course-content/master/nma.mplstyle")
 # The download cells will store the data in nested directories starting here:
 HCP_DIR = "./DATA"
 if not os.path.isdir(HCP_DIR):
@@ -395,3 +396,25 @@ def extract_frontoparietal_parcels(two_back, no_back, region_info):
         no_back_fpn.append(frontopariet_no_back)
 
     return two_back_fpn, no_back_fpn
+
+
+def calculate_entropy(data):
+    en = at.sample_entropy(data.reshape(-1))
+    return en
+
+
+def sliding_window(data, win_size):
+    return np.lib.stride_tricks.sliding_window_view(data, win_size, axis=1)
+
+
+def calculate_sliding_entropy(data, win_size=10):
+    # calculate sliding window mmse
+    win = sliding_window(data, win_size=win_size)
+    # init result array
+    entropies = []
+    # iterate over all windows
+    for step in range(win.shape[1]):
+        re = calculate_entropy(win[:, step, :])
+        entropies.append(re)
+
+    return entropies
