@@ -23,6 +23,10 @@ for f in res_files:
 df = pd.concat(mdfs, ignore_index=True)
 df.to_csv('extracted_features/all_mmse.csv', index=False)
 # %%
+# by the way, make this long format
+pivoted = df.pivot_table(index=['subject', 'condition'],columns='scale', values='mmse').reset_index()
+pivoted.to_csv('extracted_features/all_mmse_pivoted.csv', index=False)
+# %%
 df
 
 
