@@ -2,6 +2,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import anchusa as an
 # %%
 res_files = [
     'mmse_0_50.csv',
@@ -29,16 +30,23 @@ df
 df
 
 sns.lineplot(x = 'scale', y = 'mmse', hue = 'condition', data = df)
+plt.savefig('figures/mmse.png', dpi=300)
+plt.show()
 
-plt.show()
 # %%
-# sns.stripplot(x = 'scale', y = 'mmse', hue = 'condition', data = df)
-sns.boxplot(x = 'scale', y = 'mmse', hue = 'condition', data = df)
+tot = df.groupby(['subject', 'condition'])['mmse'].sum().to_frame()
+sns.swarmplot(x = 'condition', y = 'mmse', data = tot, alpha = 0.8, size=3)
+sns.violinplot(x = 'condition', y = 'mmse', data = tot)
+plt.savefig('figures/total_mmse.png', dpi=300)
 plt.show()
+
 
 # %%
 win_df = pd.read_csv('extracted_features/windowed_sample_entropy_window5.csv')
-sns.lineplot(data=win_df, x='sample', y='mmse', hue='condition')
+win_df['time'] = win_df['sample'] * an.TR
+sns.lineplot(data=win_df, x='time', y='mmse', hue='condition')
+plt.ylabel('entropy')
+plt.savefig('figures/wndtropy_sliding_window5.png', dpi=300)
 plt.show()
 
 # %%
@@ -52,4 +60,13 @@ plt.show()
 # %%
 win_df = pd.read_csv('extracted_features/windowed_sample_entropy_window12.csv')
 sns.lineplot(data=win_df, x='sample', y='mmse', hue='condition')
+plt.show()
+# %%
+win_df
+# %%
+win_df = pd.read_csv('extracted_features/windowed_entropy_by_object.csv')
+win_df['time'] = win_df['sample'] * an.TR
+g = sns.FacetGrid(win_df, col="object", hue='condition')
+g.map(sns.lineplot, 'time', 'entropy')
+plt.savefig('figures/entropy_by_object.png', dpi=300)
 plt.show()

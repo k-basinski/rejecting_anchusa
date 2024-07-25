@@ -1,3 +1,4 @@
+# %%
 import numpy as np
 from sys import argv
 import pandas as pd
@@ -21,59 +22,32 @@ output_folder = 'extracted_features'
 
 window_size = 5
 
-# list all 2-back conditions
-two_back_conds = ['2bk_body', '2bk_faces', '2bk_places', '2bk_tools']
+# conditions
+conds = ['2bk', '0bk']
 
+# objects
+objects = ['body', 'faces', 'places', 'tools']
 
-# list all 0-back conditions
-no_back_conds = ['0bk_body', '0bk_faces', '0bk_places', '0bk_tools']
-
-
-
-# load data
-two_back, no_back = [], []
-
-for s in subjects:
-    two_backs_per_sub = an.get_conds(s, "wm", two_back_conds, concat=False)
-    no_backs_per_sub = an.get_conds(s, "wm", no_back_conds, concat=False)
-    two_back.append(two_backs_per_sub)
-    no_back.append(no_backs_per_sub)
-
-## Uses the extract_frontoparietal_parcels to extract timeseries of parcels belonging to FPN
-two_back_fpn, no_back_fpn = an.extract_frontoparietal_parcels(two_back, no_back, region_info)
 
 # %%
 dfs = []
+for s in subjects:
+    print('Calculating entropy for subject {s}'.format(s=s))
+    for cond in conds:
+        for obj in objects:
+            data_list = an.get_conds(s, "wm", [f'{cond}_{obj}'], concat=False)
+            for run in range(2):
+                ens = an.calculate_sliding_entropy(data_list[run], win_size=window_size)
+                mdf = pd.DataFrame({
+                    'subject': s,
+                    'condition': cond,
+                    'object': obj,
+                    'run': run,
+                    'entropy': ens,
+                })
+                dfs.append(mdf)
 
-s = 0
-
-ens = an.calculate_sliding_entropy(two_back_fpn[s], win_size=window_size)
-
-# %%
-for s in subjects[start:stop]:
-    print(f'Calculating sliding window entropy for subject: {s}...', end='')
-    res = an.calculate_sliding_entropy(two_back_fpn[s], win_size=window_size)
-    mdf = pd.DataFrame({
-        'subject': s,
-        'condition': 'two_back',
-        'mmse': res,
-    })
-    dfs.append(mdf)
-
-    res = an.calculate_sliding_entropy(no_back_fpn[s], win_size=window_size)
-    mdf = pd.DataFrame({
-        'subject': s,
-        'condition': 'no_back',
-        'mmse': res,
-    })
-
-    dfs.append(mdf)
-    print('...done.')
-# %%
-
-
-# %%
 df = pd.concat(dfs)
 df.index.name = 'sample'
-df.to_csv(f'{output_folder}/windowed_sample_entropy_window{window_size}.csv')
+df.to_csv(f'{output_folder}/windowed_entropy_by_object.csv')
 
